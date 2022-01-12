@@ -11,6 +11,8 @@
       </option>
     </select>
     <button id="search-button" v-on:click="filterByActorName">Search</button>
+    <!-- <button id="search-button" v-on:click="fillMovieResults">Movie Results</button> -->
+
     <ul class ="movie-lists">
       These are the Keanu Reeves Movies shared with {{selectedActor.name}}:
       <li v-for="movie in DisplayKRMovies" v-bind:key="movie.id">
@@ -32,12 +34,14 @@
           </ul>
       </li>
     </ul>
+    <p id="movie-results"> </p>
+
   </div>
 </template>
 
 <script>
 import apiService from "@/services/ApiService.js"
-//import validationService from "@/services/ValidationService.js"
+import validationService from "@/services/ValidationService.js"
 
 export default {
   name: 'MovieLister',
@@ -58,7 +62,7 @@ export default {
       DisplayNCMovies: [],
       DisplayKRMovies: [],
       result: {
-        name: "",
+        name: "AAAA",
         KRMovies: [],
         NCMovies: []
       },
@@ -82,22 +86,6 @@ export default {
               if (actor.name === "Nicolas Cage") {
                 this.actorDataNicolas.unshift(actor);
               }
-
-              //the code below causes a server timeout
-
-          //     for (let i = 0; i < this.allActors.length; i++) {
-          //       this.result = this.allActors[i].name;
-          //       this.allMovies.forEach(movie => {
-          // //search allMovies for actors with Keanu's Id (206) and selectedActorId
-          //         if (movie.actors.includes(this.actorDataKeanu.actorId) && this.movie.actors.includes(this.allActors[i].actorId)) {
-          //           this.result.KRMovies.unshift(movie);
-          //            }
-          // //search allMovies for actors with Nicolas's Id (115) and selectedActorId
-          //         if (movie.actors.includes(this.actorDataNicolas.actorId) && this.movie.actors.includes(this.allActors[i].actorId)) {
-          //           this.result.NCMovies.unshift(movie);
-          //             }});
-          //           this.movieResults.unshift(this.result)
-          //       }
             })
           }
         )
@@ -115,26 +103,58 @@ export default {
         .catch(
           error => console.log(error)
         );
-      this.allActors.forEach((actor) => {
+
+    //now to fill the movieResults array
+    //... not 100% sure why I have to make a new call for movieResults to fill, maybe something about local variables?
+      apiService
+        .getAllActors()
+        .then(
+          response => {
+            this.allActors = response.data;
+      apiService
+        .getAllMovies()
+        .then(
+          response => {
+            this.allMovies = response.data;
+          }
+        )
+        this.allActors.forEach((actor) => {
+
         //reset the arrays and name to blank every new actor loop
-        this.result.KRMovies = [];
-        this.result.NCMovies = [];
-        this.result.name = "";
+        let loopKRMovies = [];
+        let loopNCMovies = [];
+        let loopname = actor.name;
 
         //for new result, get each actor's name and assign it to the result
-        this.result.name = actor.name;
+        this.loopname = actor.name;
           this.allMovies.forEach((movie) => {
             //search allMovies for actors with Keanu's Id (206) and looped actorId
-            if (movie.actors.includes(this.actorDataKeanu[0].actorId) && movie.actors.includes(this.actor.actorId)) {
-              this.result.KRMovies.unshift(movie);
+            if (movie.actors.includes(this.actorDataKeanu[0].actorId) && movie.actors.includes(actor.actorId)) {
+              loopKRMovies.unshift(movie.title);
               }
             //search allMovies for actors with Nicolas's Id (115) and looped actorId
-            if (movie.actors.includes(this.actorDataNicolas[0].actorId) && movie.actors.includes(this.actor.actorId)) {
-              this.result.NCMovies.unshift(movie);
+            if (movie.actors.includes(this.actorDataNicolas[0].actorId) && movie.actors.includes(actor.actorId)) {
+              loopNCMovies.unshift(movie.title);
               }
           })
-            this.movieResults.unshift(this.result);
-      })
+            this.movieResults.unshift({loopname, loopKRMovies, loopNCMovies});
+        })})
+      // let movieResultsStr = JSON.stringify(this.movieResults);
+      // window.onload = function printMovieResults() {
+      //     document.getElementById("movie-results").innerText = movieResultsStr;
+      // }
+    validationService
+      .validate(this.movieResults)
+      .then(
+        response => {
+          alert(`The response is ${response.status}`)
+        }
+      )
+      .catch(
+        error => 
+          alert(`The error is ${error.status}`)
+      )
+    
     },
   methods: {
     filterByActorName(){
@@ -150,7 +170,7 @@ export default {
               this.DisplayNCMovies.unshift(movie);
           }
         })
-      }
+      },
     }
 }
 </script>
