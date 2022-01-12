@@ -9,6 +9,7 @@
 <script>
 import MovieLister from './components/MovieLister.vue'
 
+
 export default {
   name: 'App',
   components: {
@@ -25,8 +26,5 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
-}
-img {
-
 }
 </style>
