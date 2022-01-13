@@ -11,7 +11,7 @@
       </option>
     </select>
     <button id="search-button" v-on:click="filterByActorName">Search</button>
-    <!-- <button id="search-button" v-on:click="fillMovieResults">Movie Results</button> -->
+    <button id="search-button" v-if="movieResults.length > 0" v-on:click="validate">VALIDATE</button>
 
     <ul class ="movie-lists">
       These are the Keanu Reeves Movies shared with {{selectedActor.name}}:
@@ -34,7 +34,15 @@
           </ul>
       </li>
     </ul>
-    <p id="movie-results"> </p>
+    <p id="movie-results"></p>
+    <p id="movie-results-loop" v-for="actor in movieResults" v-bind:key="actor.id">
+      {{actor.name}}
+      <ul>
+        <li v-for="result in movieResults.NCMovies" v-bind:key="result.id">
+          {{result}}
+        </li>
+      </ul>
+    </p>
 
   </div>
 </template>
@@ -46,11 +54,6 @@ import validationService from "@/services/ValidationService.js"
 export default {
   name: 'MovieLister',
   props: {
-    // movieResults: {
-    // name: String,
-    // KRMovies: Array,
-    // NCMovies: Array
-    // },
     msg: String
       },
   data() {
@@ -61,12 +64,8 @@ export default {
       actorDataNicolas: [],
       DisplayNCMovies: [],
       DisplayKRMovies: [],
-      result: {
-        name: "AAAA",
-        KRMovies: [],
-        NCMovies: []
-      },
       movieResults: [],
+      movieResultsStr: "",
       selectedActor: ""
     }
   },
@@ -103,6 +102,8 @@ export default {
         .catch(
           error => console.log(error)
         );
+  },
+  mounted(){
 
     //now to fill the movieResults array
     //... not 100% sure why I have to make a new call for movieResults to fill, maybe something about local variables?
@@ -121,40 +122,48 @@ export default {
         this.allActors.forEach((actor) => {
 
         //reset the arrays and name to blank every new actor loop
-        let loopKRMovies = [];
-        let loopNCMovies = [];
-        let loopname = actor.name;
+        let name = actor.name;
+        let KRMovies = [];
+        let NCMovies = [];
+        
 
         //for new result, get each actor's name and assign it to the result
-        this.loopname = actor.name;
+        this.name = actor.name;
           this.allMovies.forEach((movie) => {
             //search allMovies for actors with Keanu's Id (206) and looped actorId
             if (movie.actors.includes(this.actorDataKeanu[0].actorId) && movie.actors.includes(actor.actorId)) {
-              loopKRMovies.unshift(movie.title);
+              KRMovies.unshift(movie.title);
               }
             //search allMovies for actors with Nicolas's Id (115) and looped actorId
             if (movie.actors.includes(this.actorDataNicolas[0].actorId) && movie.actors.includes(actor.actorId)) {
-              loopNCMovies.unshift(movie.title);
+              NCMovies.unshift(movie.title);
               }
           })
-            this.movieResults.unshift({loopname, loopKRMovies, loopNCMovies});
-        })})
-      // let movieResultsStr = JSON.stringify(this.movieResults);
-      // window.onload = function printMovieResults() {
-      //     document.getElementById("movie-results").innerText = movieResultsStr;
-      // }
+          //check to make sure there are movies in both NC and KR arrays, keeping only the confirmed ones
+          if(KRMovies.length > 0 && NCMovies.length > 0){
+            this.movieResults.unshift({KRMovies, NCMovies, name});
+          }
+              })})
+            this.movieResultsStr = JSON.parse(JSON.stringify(this.movieResults));
+            console.log(this.movieResultsStr)
+    
+    //validation
     validationService
-      .validate(this.movieResults)
+      .validate(this.movieResultsStr)  //Vue's Observer keeps getting in the way and I tried lifestyle hook changes, parse/stringify, 
+                                       //for loops, but cannot get around the Observer which is why the data being validated looks empty
+                                       //despite having the contents of movieResults there
       .then(
         response => {
           alert(`The response is ${response.status}`)
+          console.log(response.data)
         }
       )
       .catch(
-        error => 
-          alert(`The error is ${error.status}`)
+        error => {
+          console.log(error.response.data)
+          console.log(this.movieResults)
+        }
       )
-    
     },
   methods: {
     filterByActorName(){
@@ -171,6 +180,23 @@ export default {
           }
         })
       },
+      validate() {
+        validationService
+      .validate(this.movieResultsStr)
+      .then(
+        response => {
+          alert(`The response is ${response.status}`)
+          console.log(response.data)
+        }
+      )
+      .catch(
+        error => {
+          alert(`The error is ${error.response.data}`)
+          console.log(error.response.data)
+          console.log(this.movieResults)
+        }
+      )
+      }
     }
 }
 </script>
@@ -181,7 +207,6 @@ h3 {
   margin: 40px 0 0;
 }
 ul {
-  list-style-type: none;
   padding: 0;
 }
 li {

@@ -6,10 +6,13 @@ const http = axios.create({
 export default {
 
     getAllActors() {
-        return http.get(`/actors`, {headers: {"x-chmura-cors": "30ee585c-820e-4b10-aa59-0946b2087400"}});
+        return http.get(`/actors`
+        , {headers: {"x-chmura-cors": "30ee585c-820e-4b10-aa59-0946b2087400"}}
+        );
     },
     getAllMovies() {
-        return http.get(`/movies`, {headers: {"x-chmura-cors": "30ee585c-820e-4b10-aa59-0946b2087400"}});
+        return http.get(`/movies`
+        , {headers: {"x-chmura-cors": "30ee585c-820e-4b10-aa59-0946b2087400"}}
+        );
     },
-    //getActorNameFromId(id)
 }
