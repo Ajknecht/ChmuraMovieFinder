@@ -11,9 +11,11 @@
       </option>
     </select>
     <button id="search-button" v-on:click="filterByActorName">Search</button>
-    <button id="search-button" v-if="movieResults.length > 0" v-on:click="validate">VALIDATE</button>
+    <button id="search-button" v-on:click="validate">VALIDATE</button>
+    <p id="validation"> </p>
 
-    <ul class ="movie-lists">
+
+    <ul class ="actor-dropdown">
       These are the Keanu Reeves Movies shared with {{selectedActor.name}}:
       <li v-for="movie in DisplayKRMovies" v-bind:key="movie.id">
         {{movie.title}}
@@ -34,7 +36,14 @@
           </ul>
       </li>
     </ul>
-  </div>
+    <p v-for="actor in movieResults" v-bind:key="actor.id">
+        <strong>{{actor.name}}: </strong>
+        <ul>
+        <li> Nicolas Cage Movies: {{actor.NCMovies}}</li>
+        <li> Keanu Reeves Movies: {{actor.KRMovies}}</li>
+        </ul>
+  </p>
+    </div>
 </template>
 
 <script>
@@ -92,8 +101,6 @@ export default {
         .catch(
           error => console.log(error)
         );
-  },
-  mounted(){
 
     //now to fill the movieResults array
     //... not 100% sure why I have to make a new call for movieResults to fill, maybe something about local variables?
@@ -134,13 +141,6 @@ export default {
             this.movieResults.unshift({KRMovies, NCMovies, name});
           }
               })})
-          //trying to get around the Observer
-            // this.movieResultsStr = JSON.parse(JSON.stringify(this.movieResults));
-            // let movieResultsFinal = this.movieResults.filter ( (movie) => {
-            //   return JSON.stringify(JSON.parse(JSON.stringify(movie)))
-            // });
-
-            // console.log(movieResultsFinal)
 
     //validation
     // validationService
@@ -182,6 +182,7 @@ export default {
       .then(
         response => {
           alert(`The response is ${response.status}`)
+          document.getElementById("validation").innerText = `The server response is ${response.status}`
           console.log(response.data)
         }
       )
