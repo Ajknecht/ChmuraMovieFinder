@@ -34,16 +34,6 @@
           </ul>
       </li>
     </ul>
-    <p id="movie-results"></p>
-    <p id="movie-results-loop" v-for="actor in movieResults" v-bind:key="actor.id">
-      {{actor.name}}
-      <ul>
-        <li v-for="result in movieResults.NCMovies" v-bind:key="result.id">
-          {{result}}
-        </li>
-      </ul>
-    </p>
-
   </div>
 </template>
 
@@ -144,26 +134,31 @@ export default {
             this.movieResults.unshift({KRMovies, NCMovies, name});
           }
               })})
-            this.movieResultsStr = JSON.parse(JSON.stringify(this.movieResults));
-            console.log(this.movieResultsStr)
-    
+          //trying to get around the Observer
+            // this.movieResultsStr = JSON.parse(JSON.stringify(this.movieResults));
+            // let movieResultsFinal = this.movieResults.filter ( (movie) => {
+            //   return JSON.stringify(JSON.parse(JSON.stringify(movie)))
+            // });
+
+            // console.log(movieResultsFinal)
+
     //validation
-    validationService
-      .validate(this.movieResultsStr)  //Vue's Observer keeps getting in the way and I tried lifestyle hook changes, parse/stringify, 
-                                       //for loops, but cannot get around the Observer which is why the data being validated looks empty
-                                       //despite having the contents of movieResults there
-      .then(
-        response => {
-          alert(`The response is ${response.status}`)
-          console.log(response.data)
-        }
-      )
-      .catch(
-        error => {
-          console.log(error.response.data)
-          console.log(this.movieResults)
-        }
-      )
+    // validationService
+    //   .validate(this.movieResults)  //Vue's Observer keeps getting in the way and I tried lifestyle hook changes, parse/stringify, 
+    //                                    //for loops, but cannot get around the Observer which is why the data being validated looks empty
+    //                                    //despite having the contents of movieResults there
+    //   .then(
+    //     response => {
+    //       alert(`The response is ${response.status}`)
+    //       console.log(response.data)
+    //     }
+    //   )
+    //   .catch(
+    //     error => {
+    //       console.log(error.response.data)
+    //       console.log(this.movieResults)
+    //     }
+    //   )
     },
   methods: {
     filterByActorName(){
@@ -180,9 +175,10 @@ export default {
           }
         })
       },
+      //method for the validate button; trying to validate after page completely laods to check for it's a lifestyle issue
       validate() {
         validationService
-      .validate(this.movieResultsStr)
+      .validate(this.movieResults)
       .then(
         response => {
           alert(`The response is ${response.status}`)
